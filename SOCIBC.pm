@@ -167,7 +167,7 @@ sub socibcport($;$$) {
 
 	}else{
 		$prevdate = socibcdate($market, longdate(busday(shortdate($date) - 1)));
-		$openfilename=socibcfile($market, $prevdate, "NEXTDAY");
+		$openfilename=socibcfile($market, $prevdate, "NEXTDAY");  #"");?
 
 		#print "open filename = $openfilename \n";
 
@@ -188,7 +188,7 @@ sub socibcport($;$$) {
 
 		if ($idstore{$oldsymbol} and $options =~ /NEXTDAY/i) { #fix with closing data and chainto mapping
 			foreach my $item (@itemslist) {
-				$$record{$item}=1$idstore{$oldsymbol}{$item};
+				$$record{$item}=$idstore{$oldsymbol}{$item};
 			}
 		}
 
