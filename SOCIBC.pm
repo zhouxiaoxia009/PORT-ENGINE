@@ -2,7 +2,7 @@ package Rimes::Portfolio::SOCIBC;
 require Exporter;
 
 @ISA=qw(Exporter);
-@EXPORT_OK=qw(socibcdate socibcport);
+@EXPORT_OK=qw(socibcdate socibcport socibcfile);
 %EXPORT_TAGS=(ALL => \@EXPORT_OK);
 
 
@@ -30,14 +30,14 @@ my %indices=(
 sub socibcdate (;$$$) {
 	my  ($market, $date, $options)=@_;
 
-	$date=autodate($date, "yyyymmdd") if $date =~ /^\d{8}$/;
+	$date=autodate($date, "yyyymmdd") if $date =~ /^\d{8}$/; #input in excel
 
 	my  @files=listdir("$directories{SOCIBC}\\PORTS");
 	my  @dates;
 	my  $type = ($options =~ /^(NEXTDAY)$/)? "OPEN":
 				($options =~ /^(PROFORMA)$/)? "PROFORMA":"CLOSE";
 	@dates = map { $_ =~ /(\d{8})\.$market.$type\.tsv/i ? ($1) : () } @files;
-
+    # grep dates from filename
 
 	my ($mindate, $maxdate)=minmax @dates;
 
@@ -46,13 +46,13 @@ sub socibcdate (;$$$) {
 
 	} elsif ($date eq 'LAST') {
 		if ($options =~ /^(NEXTDAY)$/){
-			return $dates[-2];
+			return $dates[-2]; #previousday
 		}else{
-			return $maxdate;
+			return $maxdate; #sameday
 		}
 
 	} else {
-		@dates=grep { $_ <= $date } @dates if $date != 0;
+		@dates=grep { $_ <= $date } @dates if $date != 0; #grep input date value
 		return @dates ? $dates[-1] : undef;
 	}
 
@@ -67,12 +67,14 @@ sub socibcfile(;$$$) {
 
 	if($options eq "NEXTDAY"){
 		my $hols=$indices{$market}{HOLS};
-		$refdate = get_nextdate($refdate,$hols);
+		$refdate = get_nextdate($refdate,$hols); #refdate=20190329, notice it is global var
 		my  @files=listdir("$directories{SOCIBC}\\PORTS");
 		my  @dates;
 		@dates = map { $_ =~ /(\d{8})\.$market.$type\.tsv/i ? ($1) : () } @files;
-		@dates=sort grep { $_ >=$refdate } @dates;
+		@dates=sort grep { $_ >=$refdate } @dates; #@dates=(20190329, 20190401, 20190402)
 		$refdate=($refdate<$dates[0])?$dates[0]:$refdate;
+        #to avoid the holiday
+        #refdate=same day or the day after holiday
 	}
 
 	$filename = "$directories{SOCIBC}\\PORTS\\$refdate.$market.$type.tsv";
@@ -98,7 +100,8 @@ sub socibcport($;$$) {
 
 	my (%trloc,%nrloc,%trivccy,%nrivccy,$baseccy,$tmk,$trtmk,$nrtmk,$itmk,$itrtmk,$inrtmk);
 	$baseccy=$indices{$market}{CCY};
-
+    # trloc=TRLOC
+    # trivccy=TMCCAD
 	if(-f $gifile){
 		my @trrecs;
 		readtable($gifile, \@trrecs);
