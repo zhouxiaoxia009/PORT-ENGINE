@@ -143,12 +143,12 @@ sub socibcport($;$$) {
 
 		%symbol_map = readinifile($CHAINTO."symbol_map.ini");
 
-		my $nextdate = $cmp[0]{DATE};
+		my $nextdate = $cmp[0]{DATE}; #the same day
 
 		if($symbol_map{$nextdate}) {
 
-			my $clsdate=socibcdate($market, $nextdate, "");
-			my  ($clsfilename,$gifilename,$nifilename)=socibcfile($market, $clsdate, "")     or return;
+			my $clsdate=socibcdate($market, $nextdate, ""); #clsdate=nextdate
+			my  ($clsfilename,$gifilename,$nifilename)=socibcfile($market, $clsdate, "")     or return; #fetch close file
 
 			my @clscmp;
 
@@ -196,7 +196,7 @@ sub socibcport($;$$) {
 		}
 
 		#need to modify
-		#$tmk +=$$record{IV.$baseccy};
+	
 		$$record{MVLOC}=$$record{UPLOC}*$$record{SHOUT};
 		$$record{IVLOC}=$$record{UPLOC}*$$record{SHINV};
 		$$record{TRIVLOC}=$$record{UPLOC}*$$record{SHOUT};
@@ -234,7 +234,7 @@ sub socibcport($;$$) {
 			$$record{"TRIV".$baseccy} = $$record{IV.$baseccy} - $$record{SHINV}*($div / $fxdiv) if $fxdiv;
 			$$record{"NRIV".$baseccy} = $$record{IV.$baseccy} - $$record{SHINV}*($niv / $fxniv) if $fxniv;
 
-			$tmk +=$$record{"IV".$baseccy};
+			$tmk +=$$record{"IV".$baseccy}; #modify: when spinoffflag = 1 and spinoffadj != 1, tmk should use the spinoffadj which reflects the corporate action.
 			$trtmk +=$$record{"TRIV".$baseccy};
 			$nrtmk +=$$record{"NRIV".$baseccy};
 
@@ -268,6 +268,7 @@ sub socibcport($;$$) {
 			}
 		}
 
+			
 			$itrtmk+=$$record{"ITRIV".$baseccy};
 			$inrtmk+=$$record{"INRIV".$baseccy};
 			$itmk+=$$record{"IIV".$baseccy};
